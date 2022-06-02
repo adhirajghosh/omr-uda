@@ -108,15 +108,19 @@ class BaseDetectorDA(nn.Module):
             return self.aug_test(imgs, img_metas, **kwargs)
 
     @auto_fp16(apply_to=('img', ))
-    def forward(self, img, img_meta, gt_bboxes, gt_labels, src = True, return_loss=True, **kwargs):
-        if return_loss == True and src == True:
-            return self.forward_train_src(img, img_meta, gt_bboxes, gt_labels, **kwargs)
-        elif return_loss == False and src ==False:
-            return self.forward_train_tgt(img)
-        elif return_loss == False:
-            return self.forward_test(img, img_meta, **kwargs)
+    def forward(self, img, img_meta, gt_bboxes, gt_labels, src, return_loss=True, **kwargs):
+        if return_loss:
+            return self.forward_train(img, img_meta, gt_bboxes, gt_labels, src, **kwargs)
         else:
-            return None
+            return self.forward_test(img, img_meta, **kwargs)
+        # if return_loss == True and src == True:
+        #     return self.forward_train_src(img, img_meta, gt_bboxes, gt_labels, **kwargs)
+        # elif return_loss == False and src ==False:
+        #     return self.forward_train_tgt(img)
+        # elif return_loss == False:
+        #     return self.forward_test(img, img_meta, **kwargs)
+        # else:
+        #     return None
 
     def show_result(self, data, result, dataset=None, score_thr=0.3):
         if isinstance(result, tuple):

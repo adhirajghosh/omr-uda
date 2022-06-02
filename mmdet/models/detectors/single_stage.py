@@ -83,7 +83,7 @@ class SingleStageDetector(BaseDetector):
             bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes)
             for det_bboxes, det_labels in bbox_list
         ]
-        return bbox_results[0]
+        return bbox_results[0], bbox_list
 
     def aug_test(self, imgs, img_metas, rescale=False):
         raise NotImplementedError
@@ -140,25 +140,44 @@ class SingleStageDetectorDA(BaseDetectorDA):
         outs = self.bbox_head(x)
         return outs
 
-    def forward_train_src(self,
+    def forward_train(self,
                       img,
                       img_metas,
                       gt_bboxes,
                       gt_labels,
+                      src,
                       gt_bboxes_ignore=None):
         x = self.extract_feat(img)
-        outs = self.bbox_head(x)
-        loss_inputs = outs + (gt_bboxes, gt_labels, img_metas, self.train_cfg)
-        losses = self.bbox_head.loss(
-            *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
+        if src == True:
+            outs = self.bbox_head(x)
+            loss_inputs = outs + (gt_bboxes, gt_labels, img_metas, self.train_cfg)
+            losses = self.bbox_head.loss(
+                *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
 
-        self.last_vals = dict(img=img)
-        return losses, x
+            self.last_vals = dict(img=img)
+            return losses, x
+        else:
+            return x
 
-    def forward_train_tgt(self,
-                      img):
-        x = self.extract_feat(img)
-        return x
+    # def forward_train_src(self,
+    #                   img,
+    #                   img_metas,
+    #                   gt_bboxes,
+    #                   gt_labels,
+    #                   gt_bboxes_ignore=None):
+    #     x = self.extract_feat(img)
+    #     outs = self.bbox_head(x)
+    #     loss_inputs = outs + (gt_bboxes, gt_labels, img_metas, self.train_cfg)
+    #     losses = self.bbox_head.loss(
+    #         *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
+    #
+    #     self.last_vals = dict(img=img)
+    #     return losses, x
+    #
+    # def forward_train_tgt(self,
+    #                   img):
+    #     x = self.extract_feat(img)
+    #     return x
 
     def simple_test(self, img, img_meta, rescale=False):
         x = self.extract_feat(img)
@@ -169,7 +188,7 @@ class SingleStageDetectorDA(BaseDetectorDA):
             bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes)
             for det_bboxes, det_labels in bbox_list
         ]
-        return bbox_results[0]
+        return bbox_results[0], bbox_list
 
     def aug_test(self, imgs, img_metas, rescale=False):
         raise NotImplementedError

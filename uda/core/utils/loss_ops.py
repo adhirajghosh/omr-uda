@@ -79,6 +79,7 @@ def summarise_loss(loss):
     for loss_names, loss_value in loss.items():
         if isinstance(loss_value, list):
             _losses[loss_names] = sum(_loss.mean() for _loss in loss_value)
+            # _losses[loss_names].backward()
     total_loss = sum(_value for _key, _value in _losses.items() if 'loss' in _key)
     return total_loss, _losses
 
